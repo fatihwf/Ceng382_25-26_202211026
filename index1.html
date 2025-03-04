@@ -164,6 +164,17 @@
     .login-form button:hover {
       background: #1976d2;
     }
+    
+    /* Canlı saat */
+    .clock {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      color: white;
+      font-family: 'Pacifico', cursive;
+      font-size: 2rem;
+      z-index: 30;
+    }
   </style>
 </head>
 <body>
@@ -175,8 +186,7 @@
     <!-- Toggle butonu (başlangıçta sun ikonu) -->
     <div class="toggle-btn" onclick="handleToggleClick()">
       <div id="toggleIcon" class="sun">
-        <span class="ray1"></span>
-        <span class="ray2"></span>
+        <span class="ray1"></span><span class="ray2"></span>
       </div>
     </div>
   </div>
@@ -191,6 +201,9 @@
     </form>
   </div>
   
+  <!-- Canlı saat -->
+  <div id="clock" class="clock"></div>
+  
   <script>
     // Video elementleri
     const videoA = document.getElementById("videoA");
@@ -198,6 +211,7 @@
     const toggleIcon = document.getElementById("toggleIcon");
     const loginScreen = document.getElementById("loginScreen");
     const toggleBtn = document.querySelector(".toggle-btn");
+    const clock = document.getElementById("clock");
     
     // Video geçiş durumları (eski mantık korunuyor)
     let currentState = "loop1";  // Başlangıçta 1.mp4 oynuyor
@@ -233,76 +247,117 @@
     updateOverlay();
     
     // Yumuşak video geçişi (smoothTransition): video geçişleri overlay durumundan bağımsız çalışıyor
-    let currentVideo = videoA;
-    let nextVideo = videoB;
-    function smoothTransition(newSource, newState, callback) {
-      nextVideo.src = newSource;
-      nextVideo.currentTime = 0;
-      nextVideo.classList.remove("visible");
-      nextVideo.classList.add("hidden");
-      
-      nextVideo.play();
-      
-      setTimeout(() => {
-        nextVideo.classList.remove("hidden");
-        nextVideo.classList.add("visible");
-        currentVideo.classList.remove("visible");
-        currentVideo.classList.add("hidden");
-      }, 10);
-      
-      setTimeout(() => {
-        currentVideo.pause();
-        let temp = currentVideo;
-        currentVideo = nextVideo;
-        nextVideo = temp;
-        nextVideo.classList.remove("visible");
-        nextVideo.classList.add("hidden");
-        currentState = newState;
-        if (callback) callback();
-      }, 500);
+    
+let currentVideo = videoA;
+let nextVideo = videoB;
+function smoothTransition(newSource, newState, callback) {
+  nextVideo.src = newSource;
+  nextVideo.currentTime = 0;
+  nextVideo.classList.remove("visible");
+  nextVideo.classList.add("hidden");
+  
+  nextVideo.play();
+  
+  setTimeout(() => {
+    nextVideo.classList.remove("hidden");
+    nextVideo.classList.add("visible");
+    currentVideo.classList.remove("visible");
+    currentVideo.classList.add("hidden");
+  }, 10);
+  
+  setTimeout(() => {
+    currentVideo.pause();
+    let temp = currentVideo;
+    currentVideo = nextVideo;
+    nextVideo = temp;
+    nextVideo.classList.remove("visible");
+    nextVideo.classList.add("hidden");
+    currentState = newState;
+    if (callback) callback();
+  }, 500);
+}
+
+// Video bittiğinde, mevcut video durumuna göre aynı kaynağı crossfade ile yeniden yükle (overlay etkilenmez)
+[videoA, videoB].forEach(video => {
+  video.addEventListener("ended", () => {
+    if (currentState === "loop1") {
+      smoothTransition("1.mp4", "loop1");
+    } else if (currentState === "loop2") {
+      smoothTransition("2.mp4", "loop2");
+    } else if (currentState === "trans1") {
+      smoothTransition("2.mp4", "loop2");
+    } else if (currentState === "trans2") {
+      smoothTransition("1.mp4", "loop1");
     }
-    
-    // Video bittiğinde, mevcut video durumuna göre aynı kaynağı crossfade ile yeniden yükle (overlay etkilenmez)
-    [videoA, videoB].forEach(video => {
-      video.addEventListener("ended", () => {
-        if (currentState === "loop1") {
-          smoothTransition("1.mp4", "loop1");
-        } else if (currentState === "loop2") {
-          smoothTransition("2.mp4", "loop2");
-        } else if (currentState === "trans1") {
-          smoothTransition("2.mp4", "loop2");
-        } else if (currentState === "trans2") {
-          smoothTransition("1.mp4", "loop1");
-        }
-      });
-    });
-    
-    // Toggle butonuna tıklama: overlay ve video geçişlerini birlikte tetikler
-    function handleToggleClick() {
-      if (!isToggleClickable) return;
-      isToggleClickable = false;
-      
-      if (!overlayVisible) {
-        // Şu an sun görünüyor, tıklama ile overlay (login ekranı) açılır ve ikon moon olur
-        overlayVisible = true;
-        updateOverlay();
-        if (currentState === "loop1" || currentState === "trans2") {
-          smoothTransition("sasukegecis.mp4", "trans1");
-        }
-      } else {
-        // Şu an moon görünüyor, tıklama ile overlay (login ekranı) gizlenir ve ikon sun olur
-        overlayVisible = false;
-        updateOverlay();
-        if (currentState === "loop2" || currentState === "trans1") {
-          smoothTransition("narutogecis.mp4", "trans2");
-        }
+  });
+});
+// Toggle butonuna tıklama: overlay ve video geçişlerini birlikte tetikler
+function handleToggleClick() {
+  if (!isToggleClickable) return;
+  isToggleClickable = false;
+  
+  if (!overlayVisible) {
+    // Şu an sun görünüyor, tıklama ile overlay (login ekranı) açılır ve ikon moon olur
+    overlayVisible = true;
+    updateOverlay();
+    if (currentState === "loop1" || currentState === "trans2") {
+      smoothTransition("sasukegecis.mp4", "trans1");
+    }
+  } else {
+    // Şu an moon görünüyor, tıklama ile overlay (login ekranı) gizlenir ve ikon sun olur
+    overlayVisible = false;
+    updateOverlay();
+    if (currentState === "loop2" || currentState === "trans1") {
+      smoothTransition("narutogecis.mp4", "trans2");
+    }
+  }
+  
+  // 2 saniyeliğine tıklamaları engelle
+  setTimeout(() => {
+    isToggleClickable = true;
+  }, 1000);
+}
+
+// Canlı saat güncelleme fonksiyonu
+function updateClock() {
+  const now = new Date();
+  const hours = now.getHours().toString().padStart(2, '0');
+  const minutes = now.getMinutes().toString().padStart(2, '0');
+  const seconds = now.getSeconds().toString().padStart(2, '0');
+  clock.innerHTML = `${hours}:${minutes}:${seconds}`;
+}
+
+// Canlı saati başlat
+setInterval(updateClock, 1000);
+updateClock();
+
+
+
+
+const loginForm = document.querySelector(".login-form");
+
+// Username-Password print to console
+loginForm.addEventListener("submit", function(event) {
+  event.preventDefault(); 
+  const username = loginForm.querySelector('input[type="text"]').value;
+  const password = loginForm.querySelector('input[type="password"]').value;
+  
+  console.log(username);
+  console.log(password);
+});
+
+// 'H' tuşu özelliği
+// 'H' tuşu özelliği
+document.addEventListener("keydown", (event) => {
+      if (event.key.toLowerCase() === 'h') {
+        document.querySelectorAll("form").forEach(form => {
+          form.style.display = (form.style.display === "none") ? "block" : "none";
+        });
       }
-      
-      // 2 saniyeliğine tıklamaları engelle
-      setTimeout(() => {
-        isToggleClickable = true;
-      }, 1000);
-    }
+    });
+
+
   </script>
 </body>
 </html>
+
