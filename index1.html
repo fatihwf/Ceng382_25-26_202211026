@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Video Geçiş Sitesi - Güneş & Ay Buton</title>
+  <!-- Google Fonts'tan custom font ekleniyor -->
+  <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
+  <style>
+    /* Genel sıfırlamalar */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; overflow: hidden; background: black; }
+    
+    /* Video kapsayıcısı */
+    .video-container {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      background: black;
+    }
+    
+    /* İki video aynı konumda, crossfade için opacity geçişi */
+    video {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      background: black;
+      transition: opacity 0.5s ease;
+    }
+    
+    .hidden { opacity: 0; }
+    .visible { opacity: 1; }
+    
+    /* Toggle butonu: başlangıçta sun (güneş) görünecek, konumu alt 20px */
+    .toggle-btn {
+      position: fixed;
+      left: 50%;
+      bottom: 20px;
+      transform: translateX(-50%);
+      width: 100px;
+      height: 100px;
+      cursor: pointer;
+      z-index: 30;
+    }
+    
+    /* Sun (güneş) stili */
+    .sun {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle at center, #ffeb3b, #f57f17);
+      border-radius: 50%;
+      border: 2px solid #fbc02d;
+      box-shadow: 0 0 10px rgba(251, 192, 45, 0.8);
+    }
+    .sun::before,
+    .sun::after {
+      content: "";
+      position: absolute;
+      background: #fbc02d;
+    }
+    /* Yatay ışın */
+    .sun::before {
+      width: 120%;
+      height: 4px;
+      top: 50%;
+      left: -10%;
+      transform: translateY(-50%);
+      border-radius: 2px;
+    }
+    /* Dikey ışın */
+    .sun::after {
+      width: 4px;
+      height: 120%;
+      left: 50%;
+      top: -10%;
+      transform: translateX(-50%);
+      border-radius: 2px;
+    }
+    /* Çapraz ışınlar */
+    .sun span {
+      position: absolute;
+      background: #fbc02d;
+      border-radius: 2px;
+      width: 4px;
+      height: 120%;
+      top: -10%;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+    .sun span.ray1 { transform: translateX(-50%) rotate(45deg); }
+    .sun span.ray2 { transform: translateX(-50%) rotate(-45deg); }
+    
+    /* Moon (ay) stili: Hilal görünümü */
+    .moon {
+      position: relative;
+      bottom: 60px;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle at center, #ddd, #aaa);
+      border-radius: 50%;
+      overflow: hidden;
+    }
+    .moon::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 40%;
+      width: 100%;
+      height: 100%;
+      background: black;
+      border-radius: 50%;
+    }
+    
+    /* Login ekranı: orta-alt konumda, boyut 300x180px */
+    .login-screen {
+      position: fixed;
+      bottom: 80px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(255,255,255,0.9);
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.5);
+      width: 300px;
+      height: 180px;
+      display: none;
+      z-index: 25;
+      /* Custom font uygulanıyor */
+      font-family: 'Pacifico', cursive;
+    }
+    
+    /* Login formu içindeki stil */
+    .login-form h2 {
+      margin-bottom: 1rem;
+      text-align: center;
+      color: #333;
+      /* Başlık için daha büyük boyut ve custom font */
+      font-size: 2rem;
+    }
+    .login-form input[type="text"],
+    .login-form input[type="password"] {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-family: sans-serif; /* Giriş alanlarında okunabilirlik için farklı bir font tercih edilebilir */
+    }
+    .login-form button {
+      width: 100%;
+      padding: 10px;
+      background: #2196f3;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+      font-family: sans-serif;
+    }
+    .login-form button:hover {
+      background: #1976d2;
+    }
+  </style>
+</head>
+<body>
+  <div class="video-container">
+    <!-- Video elementleri -->
+    <video id="videoA" class="visible" playsinline muted></video>
+    <video id="videoB" class="hidden" playsinline muted></video>
+    
+    <!-- Toggle butonu (başlangıçta sun ikonu) -->
+    <div class="toggle-btn" onclick="handleToggleClick()">
+      <div id="toggleIcon" class="sun">
+        <span class="ray1"></span>
+        <span class="ray2"></span>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Login ekranı (başlangıçta gizli) -->
+  <div id="loginScreen" class="login-screen">
+    <form class="login-form">
+      <h2>LOGIN</h2>
+      <input type="text" placeholder="Username" required>
+      <input type="password" placeholder="Password" required>
+      <button type="submit">Enter</button>
+    </form>
+  </div>
+  
+  <script>
+    // Video elementleri
+    const videoA = document.getElementById("videoA");
+    const videoB = document.getElementById("videoB");
+    const toggleIcon = document.getElementById("toggleIcon");
+    const loginScreen = document.getElementById("loginScreen");
+    const toggleBtn = document.querySelector(".toggle-btn");
+    
+    // Video geçiş durumları (eski mantık korunuyor)
+    let currentState = "loop1";  // Başlangıçta 1.mp4 oynuyor
+    // Overlay (login ekranı) durumu: false = login gizli, true = login görünsün
+    let overlayVisible = false;
+    // Tıklanabilirlik kontrolü
+    let isToggleClickable = true;
+    
+    // Başlangıç videosu
+    videoA.src = "1.mp4";
+    videoA.currentTime = 0;
+    videoA.play();
+    
+    // Overlay (login ekranı ve toggle konumu) güncelleme fonksiyonu
+    function updateOverlay() {
+      if (overlayVisible) {
+        // Login ekranı görünür, toggle ikonu moon (ay) ve konumu login ekranının tam üstü
+        toggleIcon.className = "moon";
+        toggleIcon.innerHTML = "";
+        loginScreen.style.display = "block";
+        // loginScreen: height 180px, alt boşluk 20px → toggle butonu bottom: 200px
+        toggleBtn.style.bottom = "200px";
+      } else {
+        // Login ekranı gizli, toggle ikonu sun (güneş) ve konumu varsayılan alt (20px)
+        toggleIcon.className = "sun";
+        toggleIcon.innerHTML = '<span class="ray1"></span><span class="ray2"></span>';
+        loginScreen.style.display = "none";
+        toggleBtn.style.bottom = "20px";
+      }
+    }
+    
+    // İlk durum: overlay gizli
+    updateOverlay();
+    
+    // Yumuşak video geçişi (smoothTransition): video geçişleri overlay durumundan bağımsız çalışıyor
+    let currentVideo = videoA;
+    let nextVideo = videoB;
+    function smoothTransition(newSource, newState, callback) {
+      nextVideo.src = newSource;
+      nextVideo.currentTime = 0;
+      nextVideo.classList.remove("visible");
+      nextVideo.classList.add("hidden");
+      
+      nextVideo.play();
+      
+      setTimeout(() => {
+        nextVideo.classList.remove("hidden");
+        nextVideo.classList.add("visible");
+        currentVideo.classList.remove("visible");
+        currentVideo.classList.add("hidden");
+      }, 10);
+      
+      setTimeout(() => {
+        currentVideo.pause();
+        let temp = currentVideo;
+        currentVideo = nextVideo;
+        nextVideo = temp;
+        nextVideo.classList.remove("visible");
+        nextVideo.classList.add("hidden");
+        currentState = newState;
+        if (callback) callback();
+      }, 500);
+    }
+    
+    // Video bittiğinde, mevcut video durumuna göre aynı kaynağı crossfade ile yeniden yükle (overlay etkilenmez)
+    [videoA, videoB].forEach(video => {
+      video.addEventListener("ended", () => {
+        if (currentState === "loop1") {
+          smoothTransition("1.mp4", "loop1");
+        } else if (currentState === "loop2") {
+          smoothTransition("2.mp4", "loop2");
+        } else if (currentState === "trans1") {
+          smoothTransition("2.mp4", "loop2");
+        } else if (currentState === "trans2") {
+          smoothTransition("1.mp4", "loop1");
+        }
+      });
+    });
+    
+    // Toggle butonuna tıklama: overlay ve video geçişlerini birlikte tetikler
+    function handleToggleClick() {
+      if (!isToggleClickable) return;
+      isToggleClickable = false;
+      
+      if (!overlayVisible) {
+        // Şu an sun görünüyor, tıklama ile overlay (login ekranı) açılır ve ikon moon olur
+        overlayVisible = true;
+        updateOverlay();
+        if (currentState === "loop1" || currentState === "trans2") {
+          smoothTransition("sasukegecis.mp4", "trans1");
+        }
+      } else {
+        // Şu an moon görünüyor, tıklama ile overlay (login ekranı) gizlenir ve ikon sun olur
+        overlayVisible = false;
+        updateOverlay();
+        if (currentState === "loop2" || currentState === "trans1") {
+          smoothTransition("narutogecis.mp4", "trans2");
+        }
+      }
+      
+      // 2 saniyeliğine tıklamaları engelle
+      setTimeout(() => {
+        isToggleClickable = true;
+      }, 1000);
+    }
+  </script>
+</body>
+</html>
