@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Class Information</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #3b3b3b;
+            color: #ffffff;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: auto;
+            background-color: #1a1a1a;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+        }
+
+        h1, h2 {
+            text-align: center;
+            color: #ffffff;
+            font-weight: bold;
+            
+        }
+
+        form div {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #ffffff;
+            font-weight: bold;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+            border: 1px solid #333333;
+            border-radius: 4px;
+            background-color: #333333;
+            color: #ffffff;
+        }
+
+        button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background-color: #ffffff;
+            color: #000000;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #808080;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background-color: #1a1a1a;
+            color: #ffffff;
+        }
+
+        th, td {
+            border: 1px solid #333333;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #bebdbd;
+            color: #000000;
+        }
+
+        tr:nth-child(even) {
+            background-color: #333333;
+        }
+
+        tr:hover {
+            background-color: #808080;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Class Information</h1>
+        <form id="classForm">
+            <div>
+                <label for="className">Class Name:</label>
+                <input type="text" id="className" name="className" required>
+            </div>
+            <div>
+                <label for="numPeople">Number of People:</label>
+                <input type="number" id="numPeople" name="numPeople" required>
+            </div>
+            <div>
+                <label for="description">Description:</label>
+                <textarea id="description" name="description" required></textarea>
+            </div>
+            <button type="submit">Add Class</button>
+        </form>
+
+        <h2>Classes</h2>
+        <table id="classTable">
+            <thead>
+                <tr>
+                    <th>Class Name</th>
+                    <th>Number of People</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Dynamic class entries will be added here -->
+            </tbody>
+        </table>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const classForm = document.getElementById('classForm');
+            const classTable = document.getElementById('classTable').getElementsByTagName('tbody')[0];
+
+            classForm.addEventListener('submit', function (event) {
+                event.preventDefault();
+
+                const className = document.getElementById('className').value;
+                const numPeople = document.getElementById('numPeople').value;
+                const description = document.getElementById('description').value;
+
+                addClassToTable(className, numPeople, description);
+
+                // Clear the form
+                classForm.reset();
+            });
+
+            function addClassToTable(className, numPeople, description) {
+                const newRow = classTable.insertRow();
+
+                const cell1 = newRow.insertCell(0);
+                const cell2 = newRow.insertCell(1);
+                const cell3 = newRow.insertCell(2);
+
+                cell1.textContent = className;
+                cell2.textContent = numPeople;
+                cell3.textContent = description;
+
+                // Add event listeners for the newly added row
+                newRow.addEventListener('click', handleRowClick);
+                newRow.addEventListener('dblclick', handleRowDoubleClick);
+                newRow.addEventListener('focus', handleRowFocus, true);
+            }
+
+            function handleRowClick(event) {
+                console.log('Row clicked:', event.currentTarget);
+                alert('Row clicked: ' + event.currentTarget.cells[0].textContent);
+            }
+
+            function handleRowDoubleClick(event) {
+                console.log('Row double-clicked:', event.currentTarget);
+                alert('Row double-clicked: ' + event.currentTarget.cells[0].textContent);
+            }
+
+            function handleRowFocus(event) {
+                console.log('Row focused:', event.currentTarget);
+                event.currentTarget.style.backgroundColor = '#808080';
+            }
+        });
+    </script>
+</body>
+</html>

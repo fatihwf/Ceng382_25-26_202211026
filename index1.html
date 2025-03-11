@@ -342,8 +342,13 @@ loginForm.addEventListener("submit", function(event) {
   const username = loginForm.querySelector('input[type="text"]').value;
   const password = loginForm.querySelector('input[type="password"]').value;
   
-  console.log(username);
-  console.log(password);
+  if (username === "admin" && password === "admin") {
+    window.location.href = "table.html";
+  } else {
+    console.log("Invalid credentials");
+    // Optionally, display a message to the user
+    alert("Invalid username or password. Please try again.");
+  }
 });
 
 // 'H' tuşu özelliği
