@@ -25,16 +25,13 @@
         h1 {
             text-align: center;
             color: #ffffff;
-            
-            font-weight: 800; /* Increase font weight for bolder text */
+            font-weight: 800; 
             font-style: italic;
         }
         h2 {
             text-align: center;
             color: #ffffff;
-            
-            font-weight: 800; /* Increase font weight for bolder text */
-            
+            font-weight: 800; 
         }
 
         form div {
@@ -56,6 +53,12 @@
             border-radius: 4px;
             background-color: #333333;
             color: #ffffff;
+        }
+
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #ffffff;
+            background-color: #666666;
         }
 
         button {
@@ -165,7 +168,7 @@
 
                 // Add event listeners for the newly added row
                 newRow.addEventListener('click', handleRowClick);
-                newRow.addEventListener('dblclick', handleRowDoubleClick);
+                
                 newRow.addEventListener('focus', handleRowFocus, true);
             }
 
@@ -178,15 +181,7 @@
                 alert(`Class Name: ${className}\nNumber of People: ${numPeople}\nDescription: ${description}`);
             }
 
-            function handleRowDoubleClick(event) {
-                const row = event.currentTarget;
-                const className = row.cells[0].textContent;
-                const numPeople = row.cells[1].textContent;
-                const description = row.cells[2].textContent;
-                
-                alert(`Double Clicked\nClass Name: ${className}\nNumber of People: ${numPeople}\nDescription: ${description}`);
-            }
-
+            
             function handleRowFocus(event) {
                 console.log('Row focused:', event.currentTarget);
                 event.currentTarget.style.backgroundColor = '#808080';
