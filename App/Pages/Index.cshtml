@@ -3,7 +3,6 @@
 @using App.Models
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 
-
 <h2>Class Management</h2>
 
 <div class="container">
@@ -12,6 +11,8 @@
         <div class="col-md-6">
             <form method="post">
                 <input type="hidden" asp-for="Id" />
+                <input type="hidden" asp-for="Filter" />
+                <input type="hidden" asp-for="PageNumber" />
                 <div class="form-group">
                     <label asp-for="ClassName"></label>
                     <input asp-for="ClassName" class="form-control" />
@@ -34,18 +35,27 @@
                 }
                 else
                 {
-                    <button type="submit" asp-page-handler="Edit" class="btn btn-secondary">Update Class</button>
+                    <button type="submit" asp-page-handler="Update" class="btn btn-secondary">Update Class</button>
                     <button type="submit" asp-page-handler="Cancel" class="btn btn-danger">Cancel</button>
                 }
             </form>
         </div>
 
-        <!-- Right Side: Table -->
+        <!-- Right Side: Table with Filtering and Pagination -->
         <div class="col-md-6">
+            <!-- Filter Form: Submit as GET so that filtering query parameters are available -->
+            <form method="get" class="form-inline mb-3">
+                <div class="form-group">
+                    <label for="Filter" class="mr-2">Filter by Class Name:</label>
+                    <input type="text" class="form-control" name="Filter" value="@Model.Filter" placeholder="Enter class name" />
+                </div>
+                <button type="submit" class="btn btn-primary ml-2">Filter</button>
+            </form>
+
             <table class="table table-bordered">
                 <thead>
                     <tr>
-                        <th>Id</th>
+                        @* ID sütunu gösterilmiyor *@
                         <th>Class Name</th>
                         <th>Student Count</th>
                         <th>Description</th>
@@ -56,14 +66,21 @@
                     @foreach (var item in Model.ClassList)
                     {
                         <tr>
-                            <td>@item.Id</td>
                             <td>@item.ClassName</td>
                             <td>@item.StudentCount</td>
                             <td>@item.Description</td>
                             <td>
-                                <form method="post">
+                                <!-- Her iki işlemde de filtre ve sayfa numarası bilgilerini gizli alanlarla gönderiyoruz -->
+                                <form method="post" class="d-inline">
                                     <input type="hidden" name="id" value="@item.Id" />
+                                    <input type="hidden" name="Filter" value="@Model.Filter" />
+                                    <input type="hidden" name="PageNumber" value="@Model.PageNumber" />
                                     <button type="submit" asp-page-handler="Edit" class="btn btn-warning">Edit</button>
+                                </form>
+                                <form method="post" class="d-inline">
+                                    <input type="hidden" name="id" value="@item.Id" />
+                                    <input type="hidden" name="Filter" value="@Model.Filter" />
+                                    <input type="hidden" name="PageNumber" value="@Model.PageNumber" />
                                     <button type="submit" asp-page-handler="Delete" class="btn btn-danger">Delete</button>
                                 </form>
                             </td>
@@ -71,6 +88,28 @@
                     }
                 </tbody>
             </table>
+
+            <!-- Pagination Controls -->
+            <nav aria-label="Page navigation">
+                <ul class="pagination justify-content-center">
+                    <li class="page-item @(Model.PageNumber <= 1 ? "disabled" : "")">
+                        <a class="page-link" asp-page="Index" asp-route-PageNumber="@(Model.PageNumber - 1)" asp-route-Filter="@Model.Filter">Previous</a>
+                    </li>
+                    @for (int i = 1; i <= Model.TotalPages; i++)
+                    {
+                        <li class="page-item @(i == Model.PageNumber ? "active" : "")">
+                            <a class="page-link" asp-page="Index" asp-route-PageNumber="@i" asp-route-Filter="@Model.Filter">@i</a>
+                        </li>
+                    }
+                    <li class="page-item @(Model.PageNumber >= Model.TotalPages ? "disabled" : "")">
+                        <a class="page-link" asp-page="Index" asp-route-PageNumber="@(Model.PageNumber + 1)" asp-route-Filter="@Model.Filter">Next</a>
+                    </li>
+                </ul>
+            </nav>
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
