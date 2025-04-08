@@ -5,6 +5,7 @@ using App.Models;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using System.Linq;
 using System;
+using System.Text.Json;
 // prompt: pagination ve filter özellikleri ekle, sayfa numarasını ve filter durumunu kaydet
 // other done manually, using TempData features
 public class IndexModel : PageModel
@@ -146,4 +147,23 @@ public class IndexModel : PageModel
         
         return RedirectToPage(new { Filter = Filter, PageNumber = PageNumber });
     }
+
+    public IActionResult OnPostExport(string selectedColumns)
+    {
+        var allRecords = ClassInformationTable.GetAllClasses();
+        IEnumerable<ClassInformationModel> filteredRecords = allRecords;
+
+        if (!string.IsNullOrEmpty(Filter))
+        {
+            filteredRecords = filteredRecords.Where(c => c.ClassName.Contains(Filter, StringComparison.OrdinalIgnoreCase));
+        }
+
+        // Deserialize selected columns from JSON
+        var selectedColumnList = JsonSerializer.Deserialize<List<string>>(selectedColumns);
+
+        var jsonResult = Utils.Instance.ExportToJson(filteredRecords, selectedColumnList);
+
+        return File(System.Text.Encoding.UTF8.GetBytes(jsonResult), "application/json", "ExportedData.json");
+    }
+
 }

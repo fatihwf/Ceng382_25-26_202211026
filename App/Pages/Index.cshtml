@@ -39,11 +39,18 @@
                     <button type="submit" asp-page-handler="Cancel" class="btn btn-danger">Cancel</button>
                 }
             </form>
+
+            <!-- Column Selection & JSON Export -->
+            <form method="post" id="columnSelectForm">
+                
+                <input type="hidden" id="selectedColumnsInput" name="selectedColumns" value="[]">
+                <button asp-page-handler="Export" type="submit" class="btn btn-success">Export JSON</button>
+            </form>
         </div>
 
         <!-- Right Side: Table with Filtering and Pagination -->
         <div class="col-md-6">
-            <!-- Filter Form: Submit as GET so that filtering query parameters are available -->
+            <!-- Filter Form -->
             <form method="get" class="form-inline mb-3">
                 <div class="form-group">
                     <label for="Filter" class="mr-2">Filter by Class Name:</label>
@@ -55,10 +62,9 @@
             <table class="table table-bordered">
                 <thead>
                     <tr>
-                        @* ID sütunu gösterilmiyor *@
-                        <th>Class Name</th>
-                        <th>Student Count</th>
-                        <th>Description</th>
+                        <th data-column="ClassName">Class Name</th>
+                        <th data-column="StudentCount">Student Count</th>
+                        <th data-column="Description">Description</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -66,21 +72,16 @@
                     @foreach (var item in Model.ClassList)
                     {
                         <tr>
-                            <td>@item.ClassName</td>
-                            <td>@item.StudentCount</td>
-                            <td>@item.Description</td>
+                            <td data-column="ClassName">@item.ClassName</td>
+                            <td data-column="StudentCount">@item.StudentCount</td>
+                            <td data-column="Description">@item.Description</td>
                             <td>
-                                <!-- Her iki işlemde de filtre ve sayfa numarası bilgilerini gizli alanlarla gönderiyoruz -->
                                 <form method="post" class="d-inline">
                                     <input type="hidden" name="id" value="@item.Id" />
-                                    <input type="hidden" name="Filter" value="@Model.Filter" />
-                                    <input type="hidden" name="PageNumber" value="@Model.PageNumber" />
                                     <button type="submit" asp-page-handler="Edit" class="btn btn-warning">Edit</button>
                                 </form>
                                 <form method="post" class="d-inline">
                                     <input type="hidden" name="id" value="@item.Id" />
-                                    <input type="hidden" name="Filter" value="@Model.Filter" />
-                                    <input type="hidden" name="PageNumber" value="@Model.PageNumber" />
                                     <button type="submit" asp-page-handler="Delete" class="btn btn-danger">Delete</button>
                                 </form>
                             </td>
@@ -113,3 +114,43 @@
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
 }
+
+<style>
+    .highlight-column {
+        background-color: lightblue !important;
+        font-weight: bold;
+    }
+
+    input[type="checkbox"]:checked + label {
+        color: blue;
+        font-weight: bold;
+    }
+</style>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const headers = document.querySelectorAll("th[data-column]");
+        let selectedColumns = [];
+
+        headers.forEach(header => {
+            header.addEventListener("click", function () {
+                const columnName = this.getAttribute("data-column");
+                const columnCells = document.querySelectorAll(`[data-column='${columnName}']`);
+
+                // Toggle selection
+                if (selectedColumns.includes(columnName)) {
+                    selectedColumns = selectedColumns.filter(col => col !== columnName);
+                } else {
+                    selectedColumns.push(columnName);
+                }
+
+                // Toggle highlight
+                columnCells.forEach(cell => cell.classList.toggle("highlight-column"));
+                this.classList.toggle("highlight-column");
+
+                // Update hidden input field with selected columns
+                document.getElementById("selectedColumnsInput").value = JSON.stringify(selectedColumns);
+            });
+        });
+    });
+</script>
