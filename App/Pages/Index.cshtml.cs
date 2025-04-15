@@ -40,8 +40,44 @@ public class IndexModel : PageModel
 
     public int TotalPages { get; set; }
 
-    public void OnGet()
+    public string ErrorMessage {get; set; }
+
+    public IActionResult OnGet()
     {
+        string sessionUsername = HttpContext.Session.GetString("username");
+        string sessionToken = HttpContext.Session.GetString("token");
+
+        // Çerezden verileri oku
+        var cookieUsername = Request.Cookies["username"];
+        var cookieToken = Request.Cookies["token"];
+
+        // Her iki yöntemle de alınan verileri kontrol et
+        // Eğer session token boşsa, direkt çık (logout yönlendirmesi)
+        if (string.IsNullOrEmpty(sessionToken))
+        {
+            ErrorMessage = "Session expired.";
+            return RedirectToPage("/Login");
+        }
+        else
+        {
+            // Session token dolu, şimdi cookie token boş mu kontrol et
+            if (string.IsNullOrEmpty(cookieToken))
+            {
+                ErrorMessage = "Session expired.";
+                return RedirectToPage("/Login");
+            }
+            else
+            {
+                // Her iki token dolu; eşleşip eşleşmediğini kontrol et
+                if (sessionToken != cookieToken)
+                {
+                    ErrorMessage = "Session expired.";
+                    return RedirectToPage("/Login");
+                }
+            }
+        }
+            
+
         if (TempData.ContainsKey("EditingId"))
         {
             int editingId = Convert.ToInt32(TempData.Peek("EditingId"));
@@ -84,6 +120,8 @@ public class IndexModel : PageModel
 
         filtered = filtered.Skip((PageNumber - 1) * PageSize).Take(PageSize);
         ClassList = filtered.ToList();
+
+        return Page()
     }
 
     public IActionResult OnPostAdd()
