@@ -9,9 +9,57 @@ using System.Text.Json;
 // prompt: pagination ve filter özellikleri ekle, sayfa numarasını ve filter durumunu kaydet
 // other done manually, using TempData features
 
+/*
+prompt week8
+Task :
+User Information Source
+o Store user login information in a file named users.json located under
+wwwroot/data/.
+o You must define a User class (Models/User.cs) to match the structure of this JSON
+file.
+o Below is the UML representation of the User class:
++--------------------+
+| User |
++--------------------+
+| - Username : string|
+| - Password : string|
+| - Role : string|
+| - IsActive : bool |
+| - CreatedAt: DateTime |
++--------------------+
+Login Functionality
+o When the login form is submitted, read the users from the JSON file.
+o Check whether the given credentials match an active user in the list.
+Session and Cookies
+o Upon successful login:
+▪ Generate a simple token
+▪ Store the following in the session:
+▪ username
+▪ token
+▪ session_id (use HttpContext.Session.Id)
+▪ Store the same values in cookies using the following cookie settings:
+▪ Expires in 30 minutes
+▪ HttpOnly = true
+▪ Secure = true
+▪ SameSite = Strict
+Access Control
+o On all protected pages, check whether the token, username, and session_id from
+cookies match those in the session.
+o If both token and username values match between the session and cookie, then
+you may consider the login valid.
+o If the check fails, use errors and warnings to say “username or password is
+incorrect.” Or something like this message.
+Logout
+o Create a logout button that clears the session and removes all cookies related to
+login.
+o Upon successful logout, the user should be redirected to the login page.
+Redirection after Login
+o Upon successful login, the user should be redirected to the table page you
+implemented last week. This redirection should be implemented in the OnPostAsync
+method inside Login.cshtml.cs.
+*/
 namespace App.Pages
 {
-
 
     public class TableModel : PageModel
     {
