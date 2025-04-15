@@ -7,6 +7,19 @@
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/App.styles.css" asp-append-version="true" />
+    <style>
+        /* Logout butonu için özel stil */
+        .logout-btn {
+            background-color: red; /* Arka plan kırmızı */
+            color: white;          /* Metin beyaz */
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+        .logout-btn:hover {
+            background-color: darkred;
+            text-decoration: none;
+        }
+    </style>
 </head>
 <body>
     <header>
@@ -30,12 +43,12 @@
                             <a class="nav-link text-dark" asp-area="" asp-page="/Privacy">Privacy</a>
                         </li>
                     </ul>
-                    @* Sağ tarafta eğer oturum açılmışsa logout butonunu göster *@
+                    @* Sağ tarafta, eğer oturum açılmışsa logout butonunu göster *@
                     <ul class="navbar-nav">
                         @if (!string.IsNullOrEmpty(username))
                         {
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-page="/Logout">Logout</a>
+                                <a class="nav-link logout-btn" asp-page="/Logout">Log out</a>
                             </li>
                         }
                     </ul>
