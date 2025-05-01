@@ -25,7 +25,7 @@ namespace App.Pages
             }
 
             // Giriş sayfasına yönlendir
-            return RedirectToPage("/Login");
+            return RedirectToPage("/Index");
         }
     }
 }
